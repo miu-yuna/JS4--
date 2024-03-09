@@ -1,0 +1,34 @@
+header{
+  background-color: hsl(203, 89%, 53%);
+  color: aliceblue;
+  font-size: large;
+  font-family: bold;
+  padding-top: 50px;
+  padding-bottom: 50px;
+  font-size: 50px;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+
+body{
+  text-align: center;
+}
+
+.post{
+  text-align: center;
+  border: solid 40px hsl(203, 89%, 53%);
+  border-right: none;
+  border-left: none;
+  border-bottom: none;
+  background:#d1ffff;
+}
+.name{
+  font-weight: bold;
+}
+#send{
+  color: white;
+  size: 30px;
+  background-color: hsl(203, 89%, 53%);
+  
+}

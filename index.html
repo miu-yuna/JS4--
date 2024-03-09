@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>manetter</title>
+<link rel="stylesheet" href="css/kadai.css">
+</head>
+<body>
+
+<!-- コンテンツ表示画面 -->
+
+<header>Manetter🕊</header>
+<div>
+    <div class="name"> 名前：<input type="text" id="uname"> </div>
+    <div>
+        <textarea id="text" cols="30" rows="10"></textarea>
+        <button id="send">🕊</button>
+    </div>
+    <div class="post" id="output" style="overflow: auto; height: 300px;"></div>
+</div>
+
+
+<!--/ コンテンツ表示画面 -->
+
+
+
+<!-- JQuery -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<!-- JQuery -->
+
+
+<!--** 以下Firebase **-->
+<script type="module">
+
+import firebaseConfig from "./firebaseApikey.js";
+
+    // Import the functions you need from the SDKs you need
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getDatabase, ref, push, set, onChildAdded, remove, onChildRemoved, update, onChildChanged, get, }
+    from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+
+    // TODO: Add SDKs for Firebase products that you want to use
+    // https://firebase.google.com/docs/web/setup#available-libraries
+  
+   console.log(firebaseConfig);
+  
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const dbRef = ref(db,"chat");
+  
+    //送信
+    $("#send").on("click",function(){
+
+    const msg ={
+       uname : $("#uname").val(),
+       text : $("#text").val()
+    }
+  
+    const newPostRef = push(dbRef); //ユニークキーを生成
+    set(newPostRef,msg);
+    });
+  
+    onChildAdded(dbRef,function(data){
+    const msg = data.val();
+    const key = data.key; //ユニークキー
+  let h ='<p id="'+key+'" class="tweet">';
+      h += msg.uname;
+      h += '<br>';
+      h += '<span contentEditable="true" id="'+key+'_update"> '+msg.text+'</span>';
+      h += '<br>';
+      h += '<span class="remove" data-key="'+key+'">🚮</span>'
+      h += '<span class="update" data-key="'+key+'">🆙</span>'
+      h += '<span class="favorite" data-key="'+key+'">☆</span>'
+      h += '</p>';
+      $("#output").prepend(h);
+    });
+
+    //削除イベ
+    $("#output").on("click",".remove",function(){
+     const key = $(this).attr("data-key");
+     const remove_item = ref(db,"chat/"+key);
+     remove(remove_item); //データ削除
+    });
+  //更新イベ
+    $("#output").on("click",".update",function(){
+      const key = $(this).attr("data-key");
+      update(ref(db, "chat/"+key), {
+       text: $("#"+key+'_update').html()
+      });
+            
+    });
+
+// ☆をクリックしてお気に入りとして登録する
+$("#output").on("click", ".favorite", function(){
+    const key = $(this).attr("data-key");
+    const favoriteRef = ref(db, "chat/"+key+"/favorite");
+    get(favoriteRef).then((snapshot) => {
+        if(snapshot.exists()) {
+            // お気に入りが既に存在する場合は削除
+            remove(favoriteRef);
+            // ⭐の絵文字を表示する
+            $(this).html('⭐');
+        } else {
+            // お気に入りが存在しない場合は追加
+            set(favoriteRef, true);
+            // ⭐の絵文字を表示する
+            $(this).html('⭐');
+        }
+    });
+});
+
+    //削除処理がfirebase側でされたらイベント発生！
+    onChildRemoved(dbRef,(data)=> {
+    $("#"+data.key).remove();
+    });
+
+    onChildChanged(dbRef,(data)=> {
+    $("#"+data.key+'_update').html(data.val().text);
+    $("#"+data.key+'_update').fadeOut(800).fadeIn(800);
+    // お気に入りのスタイル変更
+    const isFavorite = data.val().favorite ? '⭐' : '☆';
+    $("#"+data.key+'_favorite').text(isFavorite); // 修正
+  });
+
+  /*
+    onChildAdded(dbRef,(snapshot)=>{
+    const msg = snapshot.val();
+    const key = snapshot.key(); //ユニークキー
+    let h ='<p>';
+      h += msg.uname;
+      h += '<br>';
+      h += msg.text;
+      h += '</p>';
+      $("#output").append(h);
+    });*/
+   
+
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
